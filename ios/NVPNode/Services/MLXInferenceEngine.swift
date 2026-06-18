@@ -2,6 +2,7 @@ import Foundation
 import MLX
 import MLXLLM
 import MLXLMCommon
+import Gemma4SwiftCore
 
 enum ModelLoadError: Error, LocalizedError {
     case registrationFailed

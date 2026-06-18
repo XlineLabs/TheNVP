@@ -1,5 +1,7 @@
 import Foundation
+#if os(iOS)
 import UIKit
+#endif
 
 enum Config {
     private static let coordinatorKey = "coordinator_url"
@@ -24,7 +26,7 @@ enum Config {
         set { UserDefaults.standard.set(newValue, forKey: autoModelKey) }
     }
 
-    static var modelCaps: [String] { [workerModelId] }
+    static var modelCaps: [String] { [effectiveModelId] }
 
     static let supportedOnDevice: Set<String> = [
         "gemma3_1b",
@@ -46,9 +48,21 @@ enum Config {
         return String(format: "%.1f GB", gb)
     }
 
+    static var effectiveModelId: String {
+        if workerModelId == "auto" {
+            return recommendedModelForDevice()
+        }
+        return workerModelId
+    }
+
     static func recommendedModelForDevice() -> String {
-        let deviceModel = UIDevice.current.model
         let totalMemory = ProcessInfo.processInfo.physicalMemory
+
+        #if os(iOS)
+        let deviceModel = UIDevice.current.model
+        #else
+        let deviceModel = "Mac"
+        #endif
 
         if totalMemory >= 8 * 1024 * 1024 * 1024 {
             return "gemma_4_e2b_it_4bit"
@@ -60,4 +74,6 @@ enum Config {
             return "qwen2_5_0_5b"
         }
     }
+
+    static let autoModelSelection: Bool = workerModelId == "auto"
 }

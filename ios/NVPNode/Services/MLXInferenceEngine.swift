@@ -86,7 +86,7 @@ final class MLXInferenceEngine: InferenceEngine {
         guard let container else { throw ModelLoadError.notLoaded }
 
         let start = Date()
-        let params = GenerateParameters(temperature: 0, maxTokens: maxTokens)
+        let params = GenerateParameters(temperature: 0.8, topP: 0.95, maxTokens: maxTokens)
 
         let text: String
         let modelId = Config.effectiveModelId
@@ -95,7 +95,7 @@ final class MLXInferenceEngine: InferenceEngine {
         if isGemma4 {
             let formatted = Gemma4PromptFormatter.userTurn(prompt)
             let tokens = await container.encode(formatted)
-            let input = LMInput(tokens: MLXArray(tokens))
+            let input = LMInput(tokens: MLXArray(tokens.map { Int32($0) }))
             let stream = try await container.generate(input: input, parameters: params)
             var acc = ""
             for await event in stream {

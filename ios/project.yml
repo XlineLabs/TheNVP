@@ -55,9 +55,13 @@ targets:
     platform: macOS
     sources:
       - path: NVPNodeMac
-      - path: NVPNode
-        exclude:
-          - NVPNodeApp.swift
+      - path: NVPNode/Services/InferenceEngine.swift
+      - path: NVPNode/Services/MLXInferenceEngine.swift
+      - path: NVPNode/Services/APIClient.swift
+      - path: NVPNode/Services/KeychainStore.swift
+      - path: NVPNode/Services/WorkerLoop.swift
+      - path: NVPNode/Services/Config.swift
+      - path: NVPNode/Format.swift
     dependencies:
       - package: mlx-swift-lm
         product: MLXLLM
@@ -77,8 +81,6 @@ targets:
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2025 NVP. All rights reserved."
         TARGETED_DEVICE_FAMILY: "2"
         MACOSX_DEPLOYMENT_TARGET: "14.0"
-        SWIFT_EMIT_LOC_STRINGS: YES
-        GENERATE_INFOPLIST_FILE: YES
 
 schemes:
   NVPNode:

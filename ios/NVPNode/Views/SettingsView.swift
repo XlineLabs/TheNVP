@@ -16,6 +16,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     automaticModelSection
                     modelSelectionSection
+                    downloadStatusSection
                     recoveryKeySection
                     linkAccountSection
                     coordinatorURLSection
@@ -139,6 +140,64 @@ struct SettingsView: View {
         .card()
     }
 
+    private var downloadStatusSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Download Status").font(.headline).foregroundColor(Theme.text)
+
+            if app.isModelLoading {
+                HStack {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .foregroundColor(Theme.gold)
+                    Text("Downloading \(app.selectedModelId ?? "model")...")
+                        .font(.callout).foregroundColor(Theme.text)
+                    Spacer()
+                    Text("\(Int(app.modelLoadProgress * 100))%")
+                        .font(.caption).foregroundColor(Theme.gold)
+                }
+                ProgressView(value: app.modelLoadProgress)
+                    .tint(Theme.gold)
+                Text("Don't close the app during download")
+                    .font(.caption2).foregroundColor(Theme.muted)
+            } else if app.isModelLoaded {
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(Theme.green)
+                    Text("Model ready: \(Config.effectiveModelId)")
+                        .font(.callout).foregroundColor(Theme.text)
+                    Spacer()
+                }
+            } else {
+                HStack {
+                    Image(systemName: "arrow.down.circle")
+                        .foregroundColor(Theme.muted)
+                    Text("No model loaded")
+                        .font(.callout).foregroundColor(Theme.muted)
+                    Spacer()
+                }
+            }
+
+            let cached = getCachedModels()
+            if !cached.isEmpty {
+                Divider().background(Color.white.opacity(0.06))
+                Text("Cached Models").font(.subheadline).foregroundColor(Theme.muted)
+                ForEach(cached, id: \.self) { model in
+                    HStack {
+                        Image(systemName: "folder.fill")
+                            .foregroundColor(Theme.green)
+                            .font(.caption)
+                        Text(model)
+                            .font(.caption).foregroundColor(Theme.text)
+                        Spacer()
+                        Text(Config.modelSizeGB(model))
+                            .font(.caption2).foregroundColor(Theme.muted)
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+        }
+        .card()
+    }
+
     private var recoveryKeySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Recovery key").font(.headline).foregroundColor(Theme.text)
@@ -248,6 +307,21 @@ struct SettingsView: View {
             Text(label).foregroundColor(Theme.muted)
             Spacer()
             Text(value).foregroundColor(Theme.text).font(.callout).lineLimit(1).truncationMode(.middle)
+        }
+    }
+
+    private func getCachedModels() -> [String] {
+        let fileManager = FileManager.default
+        guard let cacheDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            return []
+        }
+        let mlxCache = cacheDir.appendingPathComponent("mlx")
+        guard fileManager.fileExists(atPath: mlxCache.path) else { return [] }
+        do {
+            let contents = try fileManager.contentsOfDirectory(atPath: mlxCache.path)
+            return contents.filter { $0.contains("gemma") || $0.contains("qwen") || $0.contains("mlx") }
+        } catch {
+            return []
         }
     }
 }

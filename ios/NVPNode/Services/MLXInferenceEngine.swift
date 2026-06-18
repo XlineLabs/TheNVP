@@ -5,27 +5,23 @@ import MLXLMCommon
 import Gemma4SwiftCore
 
 enum ModelLoadError: Error, LocalizedError {
-    case registrationFailed
+    case registrationFailed(String)
     case loadFailed(String)
     case notLoaded
 
     var errorDescription: String? {
         switch self {
-        case .registrationFailed: return "Failed to register Gemma 4"
+        case .registrationFailed(let msg): return "Gemma 4 registration failed: \(msg)"
         case .loadFailed(let msg): return "Model load failed: \(msg)"
         case .notLoaded: return "Inference engine not loaded"
         }
     }
 }
 
-@MainActor
 final class MLXInferenceEngine: InferenceEngine {
     private var container: ModelContainer?
     private var currentModelId: String?
-    private var isGemma4Registered = false
-
-    var isLoaded: Bool { container != nil }
-
+    var isLoaded: Bool { container != nil && currentModelId == Config.effectiveModelId }
     private var progressHandler: ((Double) -> Void)?
 
     func setProgressHandler(_ handler: @escaping (Double) -> Void) {
@@ -33,38 +29,31 @@ final class MLXInferenceEngine: InferenceEngine {
     }
 
     func load(modelDir: URL?) async throws {
-        if container != nil && currentModelId == Config.workerModelId { return }
+        let modelId = Config.effectiveModelId
+
+        if container != nil && currentModelId == modelId {
+            return
+        }
 
         container = nil
         currentModelId = nil
         MLX.GPU.set(cacheLimit: 20 * 1024 * 1024)
 
-        let modelId = Config.workerModelId
+        progressHandler?(0.05)
 
-        if modelId == "gemma_4_e2b_it_4bit" || modelId.hasPrefix("gemma4") {
-            if !isGemma4Registered {
-                await registerGemma4()
-                isGemma4Registered = true
-            }
+        let isGemma4 = modelId == "gemma_4_e2b_it_4bit" || modelId.hasPrefix("gemma4")
+        let configuration: ModelConfiguration
 
-            progressHandler?(0.1)
-
-            let configuration = ModelConfiguration(
-                id: "mlx-community/gemma-4-e2b-it-4bit",
-                computeLimit: .limitStorage(2 * 1024 * 1024 * 1024)
-            )
-
+        if isGemma4 {
             do {
-                progressHandler?(0.3)
-                container = try await LLMModelFactory.shared.loadContainer(configuration: configuration)
-                progressHandler?(1.0)
-                currentModelId = modelId
-                nvpLog(.success, "Gemma 4 loaded successfully")
+                progressHandler?(0.1)
+                await Gemma4Registration.registerIfNeeded().value
+                progressHandler?(0.15)
+                configuration = ModelConfiguration(id: "mlx-community/gemma-4-e2b-it-4bit")
             } catch {
-                throw ModelLoadError.loadFailed(error.localizedDescription)
+                throw ModelLoadError.registrationFailed(error.localizedDescription)
             }
         } else {
-            let configuration: ModelConfiguration
             switch modelId {
             case "gemma3n_e2b":
                 configuration = LLMRegistry.gemma3n_E2B_it_lm_4bit
@@ -73,25 +62,23 @@ final class MLXInferenceEngine: InferenceEngine {
             default:
                 configuration = LLMRegistry.gemma3_1B_qat_4bit
             }
-
-            do {
-                progressHandler?(0.3)
-                container = try await LLMModelFactory.shared.loadContainer(configuration: configuration)
-                progressHandler?(1.0)
-                currentModelId = modelId
-                nvpLog(.success, "Model \(modelId) loaded")
-            } catch {
-                throw ModelLoadError.loadFailed(error.localizedDescription)
-            }
         }
-    }
 
-    private func registerGemma4() async {
+        progressHandler?(0.2)
+
         do {
-            await Gemma4Registration.registerIfNeeded().value
-            nvpLog(.info, "Gemma 4 registered with MLX")
+            let handler = progressHandler
+            container = try await LLMModelFactory.shared.loadContainer(
+                configuration: configuration,
+                progressHandler: { progress in
+                    let adjustedProgress = 0.2 + (progress.fractionCompleted * 0.75)
+                    handler?(adjustedProgress)
+                }
+            )
+            currentModelId = modelId
+            progressHandler?(1.0)
         } catch {
-            nvpLog(.warn, "Gemma 4 registration failed: \(error)")
+            throw ModelLoadError.loadFailed(error.localizedDescription)
         }
     }
 
@@ -99,21 +86,33 @@ final class MLXInferenceEngine: InferenceEngine {
         guard let container else { throw ModelLoadError.notLoaded }
 
         let start = Date()
-        let session = ChatSession(container, generateParameters: GenerateParameters(temperature: 0))
+        let params = GenerateParameters(temperature: 0, maxTokens: maxTokens)
 
-        do {
-            let text = try await session.respond(to: prompt)
-            let ms = Int(Date().timeIntervalSince(start) * 1000)
-            return GenResult(text: text, tokensOut: max(1, text.count / 4), latencyMs: ms)
-        } catch {
-            nvpLog(.error, "Generation failed: \(error)")
-            throw ModelLoadError.loadFailed(error.localizedDescription)
+        let text: String
+        let modelId = Config.effectiveModelId
+        let isGemma4 = modelId == "gemma_4_e2b_it_4bit" || modelId.hasPrefix("gemma4")
+
+        if isGemma4 {
+            let formatted = Gemma4PromptFormatter.userTurn(prompt)
+            let tokens = await container.encode(formatted)
+            let input = LMInput(tokens: MLXArray(tokens))
+            let stream = try await container.generate(input: input, parameters: params)
+            var acc = ""
+            for await event in stream {
+                if case .chunk(let s) = event { acc += s }
+            }
+            text = acc
+        } else {
+            let session = ChatSession(container, generateParameters: params)
+            text = try await session.respond(to: prompt)
         }
+
+        let ms = Int(Date().timeIntervalSince(start) * 1000)
+        return GenResult(text: text, tokensOut: max(1, text.count / 4), latencyMs: ms)
     }
 
     func unload() {
         container = nil
         currentModelId = nil
-        nvpLog(.info, "Model unloaded")
     }
 }

@@ -40,6 +40,8 @@ final class AppState: ObservableObject {
     // Model loading progress
     @Published var modelLoadProgress: Double = 0.0
     @Published var isModelLoading: Bool = false
+    @Published var selectedModelId: String?
+    var isModelLoaded: Bool { engine.isLoaded }
 
     private var statsTask: Task<Void, Never>?
     private var heartbeatTask: Task<Void, Never>?
@@ -152,14 +154,11 @@ final class AppState: ObservableObject {
 
         // Set up model loading progress tracking
         if let mlxEngine = engine as? MLXInferenceEngine {
+            selectedModelId = Config.effectiveModelId
             mlxEngine.setProgressHandler { [weak self] progress in
                 Task { @MainActor in
                     self?.modelLoadProgress = progress
-                    if progress > 0 && progress < 1 {
-                        self?.isModelLoading = true
-                    } else {
-                        self?.isModelLoading = false
-                    }
+                    self?.isModelLoading = progress > 0 && progress < 1
                 }
             }
         }

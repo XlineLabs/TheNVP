@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tailwind CSS Liquid Glass UI Kit</title>
+    
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        /* * ==========================================
+         * CORE THEME VARIABLES
+         * ========================================== */
+        :root {
+            --theme-bg: #e5e5ea; 
+            --theme-text: #000000;
+            --theme-text-muted: rgba(0, 0, 0, 0.5);
+            
+            /* Light Mode Glass */
+            --glass-bg: rgba(255, 255, 255, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass-shadow: rgba(0, 0, 0, 0.08);
+            --glass-inset: rgba(255, 255, 255, 0.9);
+            --glass-hover: rgba(0, 0, 0, 0.05);
+            --separator: rgba(0, 0, 0, 0.08);
+            --widget-fill: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark {
+            --theme-bg: #000000;
+            --theme-text: #ffffff;
+            --theme-text-muted: rgba(255, 255, 255, 0.6);
+            
+            /* Dark Mode Glass */
+            --glass-bg: rgba(30, 30, 35, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-shadow: rgba(0, 0, 0, 0.5);
+            --glass-inset: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.1);
+            --separator: rgba(255, 255, 255, 0.1);
+            --widget-fill: rgba(255, 255, 255, 0.85);
+        }
+
+        /* * ==========================================
+         * GLOBAL RESETS & BUG FIXES
+         * ========================================== */
+        * { -webkit-tap-highlight-color: transparent; }
+        button:focus, input:focus { outline: none; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--theme-bg);
+            color: var(--theme-text);
+            /* Complex vibrant mesh gradient to showcase the refraction perfectly */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.5), transparent 40%),
+                radial-gradient(circle at 90% 10%, rgba(167, 139, 250, 0.5), transparent 40%),
+                radial-gradient(circle at 50% 80%, rgba(251, 146, 60, 0.4), transparent 50%),
+                radial-gradient(circle at 80% 90%, rgba(34, 197, 94, 0.3), transparent 40%);
+            background-size: cover;
+            background-attachment: fixed;
+            min-height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* * ==========================================
+         * LIQUID GLASS COMPONENT BASE
+         * ========================================== */
+        .liquid-panel {
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 20px 40px -10px var(--glass-shadow), 
+                inset 0 1px 1px 0 var(--glass-inset);
+            transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        /* Interactive states */
+        .glass-btn:active { transform: scale(0.95); opacity: 0.8; transition: transform 0.1s ease, opacity 0.1s ease; }
+        .glass-btn { transition: all 0.2s ease; cursor: pointer; }
+        .glass-hover:hover { background-color: var(--glass-hover); }
+
+        /* Utilities */
+        .border-separator { border-color: var(--separator); transition: border-color 0.4s ease; }
+        .text-muted { color: var(--theme-text-muted); transition: color 0.4s ease; }
+        .bg-separator { background-color: var(--separator); transition: background-color 0.4s ease; }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="p-6 md:p-10 lg:p-12 selection:bg-blue-500/30">
+
+    <!-- HEADER -->
+    <header class="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight mb-2">Tailwind CSS Liquid Glass UI Kit</h1>
+            <p class="text-muted font-medium">All components. Widgets, Controls, Menus, Chat, and Dialogs.</p>
+        </div>
+        
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle-btn" class="liquid-panel w-12 h-12 rounded-full glass-hover flex items-center justify-center glass-btn text-xl text-[var(--theme-text)] shadow-xl">
+            <i class="ph-fill ph-moon dark:hidden"></i>
+            <i class="ph-fill ph-sun hidden dark:block text-yellow-400"></i>
+        </button>
+    </header>
+
+    <!-- UI KIT GRID (4 Columns for large screens) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 items-start">
+
+        <!-- ==========================================
+             COLUMN 1: WIDGETS & CARDS
+             ========================================== -->
+        <div class="flex flex-col gap-8">
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-muted mb-[-1rem]">Widgets & Cards</h2>
+
+            <!-- Component: Weather Widget -->
+            <div class="liquid-panel rounded-[2rem] p-5 flex flex-col gap-4 shadow-xl">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="font-semibold text-lg leading-tight">San Francisco</h4>
+                        <h2 class="text-5xl font-light tracking-tighter mt-1">53&deg;</h2>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <i class="ph-fill ph-cloud-sun text-3xl mb-1 text-white drop-shadow-md"></i>
+                        <p class="text-xs font-semibold">Partly Cloudy</p>
+                        <p class="text-xs text-muted mt-0.5">H:56&deg; L:50&deg;</p>
+                    </div>
+                </div>
+                
+                <div class="w-full h-px bg-separator my-1"></div>
+                
+                <div class="flex justify-between items-center text-sm font-medium">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-muted">10 AM</span>
+                        <i class="ph-fill ph-cloud-sun text-lg"></i>
+                        <span>53&deg;</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-muted">11 AM</span>
+                        <i class="ph-fill ph-cloud text-lg"></i>
+                        <span>54&deg;</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-muted">12 PM</span>
+                        <i class="ph-fill ph-cloud-rain text-lg text-blue-400"></i>
+                        <span>55&deg;</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-muted">1 PM</span>
+                        <i class="ph-fill ph-sun text-lg text-yellow-400"></i>
+                        <span>56&deg;</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component: Music Widget -->
+            <div class="liquid-panel rounded-[2rem] p-4 flex flex-col gap-4 shadow-xl">
+                <div class="flex gap-4 items-center relative">
+                    <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=150&q=80" alt="Album Art" class="w-16 h-16 rounded-[1rem] object-cover shadow-md">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-lg leading-tight">Today's Hits</h4>
+                        <p class="text-xs font-medium text-muted mt-0.5">Apple music hits</p>
+                    </div>
+                    <i class="ph-fill ph-music-notes-simple text-2xl text-muted absolute top-0 right-0"></i>
+                </div>
+                <button class="w-full liquid-panel rounded-full py-2.5 flex justify-center items-center gap-2 glass-btn font-semibold bg-[var(--glass-hover)] border border-[var(--glass-border)]">
+                    <i class="ph-fill ph-play"></i> Play
+                </button>
+            </div>
+
+            <!-- Component: Reminders Widget -->
+            <div class="liquid-panel rounded-[2rem] p-5 flex flex-col gap-3 shadow-xl">
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-bold text-lg">Reminders</h4>
+                    <span class="text-2xl font-light">3</span>
+                </div>
+                <div class="flex items-center gap-3 glass-btn glass-hover p-1 rounded-lg">
+                    <i class="ph ph-circle text-xl text-muted"></i>
+                    <span class="font-medium text-sm">Pick up contacts...</span>
+                </div>
+                <div class="flex items-center gap-3 glass-btn glass-hover p-1 rounded-lg">
+                    <i class="ph ph-circle text-xl text-muted"></i>
+                    <span class="font-medium text-sm">Order plant food</span>
+                </div>
+                <div class="flex items-center gap-3 glass-btn glass-hover p-1 rounded-lg">
+                    <i class="ph ph-circle text-xl text-muted"></i>
+                    <span class="font-medium text-sm">Water Monstera</span>
+                </div>
+            </div>
+
+            <!-- Component: Media Image Card -->
+            <div class="liquid-panel rounded-3xl overflow-hidden p-1 group glass-btn shadow-xl">
+                <div class="relative w-full h-40 rounded-[1.3rem] overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=500&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Card Image">
+                    <div class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center shadow-md">
+                        <i class="ph-fill ph-heart"></i>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-lg">Abstract Shapes</h3>
+                    <p class="text-sm text-muted mt-1">3D rendered abstract geometry.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             COLUMN 2: CONTROLS & NAVIGATION
+             ========================================== -->
+        <div class="flex flex-col gap-8">
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-muted mb-[-1rem]">Controls & Nav</h2>
+
+            <!-- Component: Call Action Interface -->
+            <div class="liquid-panel rounded-[2.5rem] p-6 shadow-xl w-full">
+                <div class="text-center mb-6">
+                    <h3 class="font-bold text-xl mb-1">Hold This Call?</h3>
+                    <p class="text-sm text-muted">You'll be notified to pick up.</p>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-y-6 gap-x-2 place-items-center">
+                    <div class="flex flex-col items-center gap-2">
+                        <button class="w-14 h-14 rounded-full liquid-panel flex items-center justify-center text-2xl glass-btn text-[var(--theme-text)] border border-[var(--glass-border)]"><i class="ph-fill ph-speaker-high"></i></button>
+                        <span class="text-[10px] font-semibold text-muted uppercase tracking-wider">Speaker</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <button class="w-14 h-14 rounded-full liquid-panel flex items-center justify-center text-2xl glass-btn text-[var(--theme-text)] opacity-50"><i class="ph-fill ph-video-camera"></i></button>
+                        <span class="text-[10px] font-semibold text-muted uppercase tracking-wider">FaceTime</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <button class="w-14 h-14 rounded-full liquid-panel flex items-center justify-center text-2xl glass-btn text-[var(--theme-text)] border border-[var(--glass-border)]"><i class="ph-fill ph-microphone-slash"></i></button>
+                        <span class="text-[10px] font-semibold text-muted uppercase tracking-wider">Mute</span>
+                    </div>
+                    
+                    <div class="col-span-3 mt-2">
+                        <button class="w-[4.5rem] h-[4.5rem] rounded-full bg-red-500 text-white flex items-center justify-center text-4xl glass-btn shadow-lg inset-shadow-sm inset-shadow-white/30 mx-auto"><i class="ph-fill ph-phone-down"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component: Control Center Toggles & Sliders -->
+            <div class="flex gap-4 w-full h-40">
+                <!-- Connectivity Toggles -->
+                <div class="liquid-panel rounded-[2rem] p-3 grid grid-cols-2 grid-rows-2 gap-3 flex-1 h-full shadow-xl">
+                    <button class="rounded-[1rem] bg-blue-500 text-white flex items-center justify-center text-2xl glass-btn inset-shadow-sm inset-shadow-white/20 shadow-md">
+                        <i class="ph-fill ph-airplane-tilt"></i>
+                    </button>
+                    <button class="rounded-[1rem] bg-blue-500 text-white flex items-center justify-center text-2xl glass-btn inset-shadow-sm inset-shadow-white/20 shadow-md">
+                        <i class="ph-fill ph-wifi-high"></i>
+                    </button>
+                    <button class="rounded-[1rem] bg-[var(--glass-hover)] border border-[var(--glass-border)] flex items-center justify-center text-2xl glass-btn text-[var(--theme-text)]">
+                        <i class="ph-fill ph-bluetooth"></i>
+                    </button>
+                    <button class="rounded-[1rem] bg-green-500 text-white flex items-center justify-center text-2xl glass-btn inset-shadow-sm inset-shadow-white/20 shadow-md">
+                        <i class="ph-fill ph-cell-signal-full"></i>
+                    </button>
+                </div>
+                
+                <!-- Vertical Sliders -->
+                <div class="flex gap-3 h-full">
+                    <!-- Brightness -->
+                    <div class="liquid-panel w-14 h-full rounded-full relative overflow-hidden flex items-end shadow-xl glass-btn border border-[var(--glass-border)]">
+                        <div class="w-full h-[65%] bg-[var(--widget-fill)] absolute bottom-0 transition-all"></div>
+                        <div class="absolute bottom-4 w-full flex justify-center">
+                            <i class="ph-fill ph-sun text-xl text-[var(--theme-bg)] dark:text-black"></i>
+                        </div>
+                    </div>
+                    <!-- Volume -->
+                    <div class="liquid-panel w-14 h-full rounded-full relative overflow-hidden flex items-end shadow-xl glass-btn border border-[var(--glass-border)]">
+                        <div class="w-full h-[30%] bg-[var(--widget-fill)] absolute bottom-0 transition-all"></div>
+                        <div class="absolute bottom-4 w-full flex justify-center text-[var(--theme-text)]">
+                            <i class="ph-fill ph-speaker-high text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component: Sliding Pill Navigation (Interactive) -->
+            <nav class="liquid-panel rounded-full flex relative items-center p-1.5 gap-1 w-max shadow-xl isolate mx-auto">
+                <div id="nav-indicator" class="absolute top-1.5 bottom-1.5 bg-[var(--theme-text)] rounded-full transition-all duration-300 ease-out z-[-1]"></div>
+                
+                <button class="nav-item px-6 py-3 rounded-full flex flex-col items-center gap-1 glass-btn text-[var(--theme-bg)] transition-colors duration-300">
+                    <i class="ph-fill ph-house text-2xl"></i>
+                </button>
+                <button class="nav-item px-6 py-3 rounded-full flex flex-col items-center gap-1 glass-btn text-muted transition-colors duration-300">
+                    <i class="ph-fill ph-magnifying-glass text-2xl"></i>
+                </button>
+                <button class="nav-item px-6 py-3 rounded-full flex flex-col items-center gap-1 glass-btn text-muted transition-colors duration-300">
+                    <i class="ph-fill ph-bell text-2xl"></i>
+                </button>
+            </nav>
+
+            <!-- Component: Grouped Toolbar Actions -->
+            <div class="flex justify-between items-center gap-3 w-full">
+                <div class="liquid-panel rounded-full flex-1 flex justify-evenly items-center py-2 px-2 shadow-xl">
+                    <button class="p-2 rounded-full text-blue-500 glass-hover glass-btn">
+                        <i class="ph ph-arrow-u-up-left text-2xl"></i>
+                    </button>
+                    <button class="p-2 rounded-full text-blue-500 glass-hover glass-btn">
+                        <i class="ph ph-folder-notch text-2xl"></i>
+                    </button>
+                    <button class="p-2 rounded-full text-blue-500 glass-hover glass-btn">
+                        <i class="ph ph-trash text-2xl"></i>
+                    </button>
+                </div>
+                <div class="liquid-panel rounded-full p-1 shrink-0 shadow-xl">
+                    <button class="p-3.5 rounded-full text-white bg-blue-500 glass-btn flex items-center justify-center shadow-md inset-shadow-sm inset-shadow-white/20">
+                        <i class="ph ph-pencil-simple text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Component: Search Bar -->
+            <div class="liquid-panel rounded-full px-4 py-3.5 flex items-center gap-3 w-full shadow-xl">
+                <i class="ph ph-magnifying-glass text-xl text-muted"></i>
+                <input 
+                    type="text" 
+                    placeholder="Search documents..." 
+                    class="bg-transparent border-none text-[16px] font-medium w-full placeholder:text-muted"
+                >
+                <button class="text-muted hover:text-blue-500 glass-btn transition-colors">
+                    <i class="ph-fill ph-microphone text-xl"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             COLUMN 3: MENUS & POPOVERS
+             ========================================== -->
+        <div class="flex flex-col gap-8">
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-muted mb-[-1rem]">Menus & Popovers</h2>
+
+            <!-- Component: Complex App Menu -->
+            <div class="liquid-panel rounded-3xl flex flex-col py-2 w-full shadow-2xl">
+                <ul class="flex flex-col text-[16px] font-medium">
+                    <li><button class="w-full text-left px-5 py-2.5 glass-hover text-blue-500 glass-btn">Home</button></li>
+                    <li><button class="w-full text-left px-5 py-2.5 glass-hover glass-btn">About Us</button></li>
+                    <li><button class="w-full text-left px-5 py-2.5 glass-hover glass-btn">Services</button></li>
+                </ul>
+                <div class="w-full h-px bg-separator my-2"></div>
+                <div class="flex justify-between items-center px-4 py-1">
+                    <button class="w-10 h-10 rounded-full glass-hover flex items-center justify-center glass-btn text-xl text-muted">
+                        <i class="ph-fill ph-gear"></i>
+                    </button>
+                    <div class="flex items-center gap-1 glass-hover px-3 py-1.5 rounded-full glass-btn">
+                        <i class="ph ph-globe text-lg"></i>
+                        <span class="text-sm font-semibold">EN</span>
+                        <i class="ph ph-caret-down text-sm ml-1"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component: Advanced Action Menu -->
+            <div class="liquid-panel rounded-[2rem] flex flex-col pt-2 w-full shadow-2xl overflow-hidden">
+                <button class="flex items-center gap-4 w-full text-left px-5 py-3.5 glass-hover glass-btn text-[15px] font-medium">
+                    <i class="ph ph-export text-xl"></i> Share
+                </button>
+                <button class="flex items-center gap-4 w-full text-left px-5 py-3.5 glass-hover glass-btn text-[15px] font-medium">
+                    <i class="ph ph-bookmark-simple text-xl"></i> Add to Favourites
+                </button>
+                <button class="flex items-center gap-4 w-full text-left px-5 py-3.5 glass-hover glass-btn text-[15px] font-medium">
+                    <i class="ph ph-book-open text-xl"></i> Add Bookmark to...
+                </button>
+                
+                <div class="w-full h-px bg-separator my-1"></div>
+                
+                <button class="flex items-center gap-4 w-full text-left px-5 py-3.5 glass-hover glass-btn text-[15px] font-medium">
+                    <i class="ph ph-plus text-xl"></i> New Tab
+                </button>
+                <button class="flex items-center gap-4 w-full text-left px-5 py-3.5 glass-hover glass-btn text-[15px] font-medium">
+                    <i class="ph ph-hand text-xl"></i> New Private Tab
+                </button>
+                
+                <div class="w-full h-px bg-separator mt-1"></div>
+                
+                <div class="flex justify-between items-center p-2 bg-[var(--glass-hover)]">
+                    <button class="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl glass-hover glass-btn">
+                        <i class="ph-fill ph-book-open text-xl text-blue-500"></i>
+                        <span class="text-[11px] font-semibold">Bookmarks</span>
+                    </button>
+                    <button class="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl glass-hover glass-btn">
+                        <i class="ph-fill ph-browsers text-xl text-blue-500"></i>
+                        <span class="text-[11px] font-semibold">All Tabs</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Component: Filter Menu Popover -->
+            <div class="liquid-panel rounded-[2rem] flex flex-col py-2 w-full shadow-2xl">
+                <button class="flex justify-between items-center w-full text-left px-5 py-3.5 glass-hover glass-btn text-[16px] font-medium text-[var(--theme-text)]">
+                    <div class="flex items-center gap-3"><i class="ph ph-chat-circle text-xl"></i> Messages</div>
+                    <i class="ph-bold ph-check text-blue-500"></i>
+                </button>
+                <button class="flex justify-between items-center w-full text-left px-5 py-3.5 glass-hover glass-btn text-[16px] font-medium">
+                    <div class="flex items-center gap-3"><i class="ph ph-question text-xl"></i> Unknown Senders</div>
+                    <span class="text-sm font-semibold text-muted">2</span>
+                </button>
+                <button class="flex justify-between items-center w-full text-left px-5 py-3.5 glass-hover glass-btn text-[16px] font-medium">
+                    <div class="flex items-center gap-3"><i class="ph ph-x-square text-xl"></i> Spam</div>
+                </button>
+                
+                <div class="w-full h-px bg-separator my-2"></div>
+                
+                <div class="px-5 py-1">
+                    <span class="text-[11px] font-semibold uppercase text-muted tracking-wider">Filter by</span>
+                </div>
+                <button class="flex items-center gap-3 w-full text-left px-5 py-3 glass-hover glass-btn text-[16px] font-medium">
+                    <i class="ph ph-chat-circle-text text-xl"></i> Unread
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             COLUMN 4: LISTS, ALERTS & MESSAGES
+             ========================================== -->
+        <div class="flex flex-col gap-8">
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-muted mb-[-1rem]">Lists & Alerts</h2>
+
+            <!-- Component: Grouped Table View -->
+            <div class="liquid-panel rounded-[1.5rem] overflow-hidden flex flex-col p-0 shadow-xl">
+                <div class="flex justify-between items-center p-4 border-b border-separator glass-btn glass-hover">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
+                            <i class="ph-fill ph-wifi-high text-lg"></i>
+                        </div>
+                        <span class="font-medium text-[16px]">Wi-Fi</span>
+                    </div>
+                    <span class="text-muted flex items-center gap-1 text-[15px]">Office_5G <i class="ph ph-caret-right text-sm"></i></span>
+                </div>
+                <div class="flex justify-between items-center p-4 border-b border-separator glass-btn glass-hover">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
+                            <i class="ph-fill ph-bluetooth text-lg"></i>
+                        </div>
+                        <span class="font-medium text-[16px]">Bluetooth</span>
+                    </div>
+                    <span class="text-muted flex items-center gap-1 text-[15px]">On <i class="ph ph-caret-right text-sm"></i></span>
+                </div>
+                <div class="flex justify-between items-center p-4 glass-btn glass-hover">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center text-white">
+                            <i class="ph-fill ph-cell-signal-full text-lg"></i>
+                        </div>
+                        <span class="font-medium text-[16px]">Cellular</span>
+                    </div>
+                    <i class="ph ph-caret-right text-sm text-muted"></i>
+                </div>
+            </div>
+
+            <!-- Component: Alert / Dialog -->
+            <div class="liquid-panel rounded-[2rem] flex flex-col items-center p-6 gap-6 text-center w-full shadow-2xl">
+                <div class="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mb-[-0.5rem]">
+                    <i class="ph-fill ph-warning-circle text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-1">Delete Project</h3>
+                    <p class="text-sm text-muted">This action cannot be undone. All files will be lost.</p>
+                </div>
+                <div class="flex gap-3 w-full">
+                    <button class="flex-1 py-3 rounded-xl bg-[var(--glass-hover)] font-semibold glass-btn border border-[var(--glass-border)] text-[var(--theme-text)]">Cancel</button>
+                    <button class="flex-1 py-3 rounded-xl bg-red-500 text-white font-semibold glass-btn shadow-md inset-shadow-sm inset-shadow-white/30">Delete</button>
+                </div>
+            </div>
+
+            <!-- Component: Chat Bubbles -->
+            <div class="flex flex-col gap-3 w-full">
+                <!-- Received Glass Bubble -->
+                <div class="self-start max-w-[85%]">
+                    <div class="liquid-panel p-4 rounded-[1.5rem] rounded-tl-sm text-[15px] font-medium leading-relaxed shadow-lg">
+                        I've updated the UI kit with all the missing components! Check it out.
+                    </div>
+                </div>
+                <!-- Sent Solid Bubble -->
+                <div class="self-end max-w-[85%]">
+                    <div class="bg-blue-600 text-white p-4 rounded-[1.5rem] rounded-tr-sm text-[15px] font-medium leading-relaxed shadow-lg inset-shadow-sm inset-shadow-white/20">
+                        Awesome, thanks! The grid looks perfect now.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component: Notification Toast -->
+            <div class="liquid-panel rounded-[1.5rem] p-4 flex items-center gap-4 shadow-xl w-full">
+                <div class="relative shrink-0">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-white/20">
+                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-[var(--theme-bg)] flex items-center justify-center text-white">
+                        <i class="ph-fill ph-envelope-simple text-[10px]"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-[15px] truncate">Ray Pai</h4>
+                        <span class="text-xs text-muted shrink-0 ml-2">Now</span>
+                    </div>
+                    <p class="text-sm text-[var(--theme-text)] mt-0.5 truncate">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                </div>
+            </div>
+
+            <!-- Component: Quick Action Scroll -->
+            <div class="liquid-panel rounded-[2rem] p-4 flex gap-4 overflow-x-auto w-full shadow-xl">
+                <button class="flex flex-col items-center gap-2 min-w-[60px] glass-btn shrink-0">
+                    <div class="w-14 h-14 rounded-full bg-[var(--glass-hover)] border border-[var(--glass-border)] flex items-center justify-center text-[var(--theme-text)]">
+                        <i class="ph ph-plus text-2xl text-blue-500"></i>
+                    </div>
+                    <span class="text-xs font-medium">New</span>
+                </button>
+                <button class="flex flex-col items-center gap-2 min-w-[60px] glass-btn shrink-0">
+                    <div class="w-14 h-14 rounded-full bg-[var(--glass-hover)] border border-[var(--glass-border)] flex items-center justify-center text-[var(--theme-text)]">
+                        <i class="ph ph-image text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-medium">Photos</span>
+                </button>
+                <button class="flex flex-col items-center gap-2 min-w-[60px] glass-btn shrink-0">
+                    <div class="w-14 h-14 rounded-full bg-[var(--glass-hover)] border border-[var(--glass-border)] flex items-center justify-center text-[var(--theme-text)]">
+                        <i class="ph ph-file-text text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-medium">Notes</span>
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Interactive JavaScript for Theme & Nav -->
+    <script>
+        // Theme Switcher Logic
+        const html = document.documentElement;
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+
+        themeToggleBtn.addEventListener('click', () => {
+            html.classList.toggle('dark');
+        });
+
+        // Sliding Pill Navigation Logic
+        const navItems = document.querySelectorAll('.nav-item');
+        const navIndicator = document.getElementById('nav-indicator');
+
+        function moveIndicator(targetButton) {
+            if(!targetButton || !navIndicator) return;
+            const leftPos = targetButton.offsetLeft;
+            const width = targetButton.offsetWidth;
+            navIndicator.style.left = `${leftPos}px`;
+            navIndicator.style.width = `${width}px`;
+        }
+
+        navItems.forEach((item) => {
+            item.addEventListener('click', () => {
+                navItems.forEach(btn => {
+                    btn.classList.remove('text-[var(--theme-bg)]');
+                    btn.classList.add('text-muted');
+                });
+                item.classList.remove('text-muted');
+                item.classList.add('text-[var(--theme-bg)]');
+                moveIndicator(item);
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (navItems.length > 0) moveIndicator(navItems[0]);
+        });
+        
+        window.addEventListener('resize', () => {
+            const activeItem = document.querySelector('.nav-item.text-\\[var\\(--theme-bg\\)\\]');
+            if(activeItem) moveIndicator(activeItem);
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,49 @@
+<div class="wrapper">
+    <div class="container">
+        <bb-neon-rails style="width: 100%; height: 100%; border-radius: 15px" bg-colors="#0a0a0f, #0a0a0f" bg-angle="0" particle-size-min="0.3" particle-size-max="1.2" particle-speed-min="-2" particle-speed-max="2" particle-color-hue-start="130" particle-color-hue-end="300" particle-color-saturation-start="100" particle-color-saturation-end="100" particle-color-lightness-start="50" particle-color-lightness-end="0" particle-lifespan-min="8000" particle-lifespan-max="25000" particle-amount="3000" grid-sides="5" grid-size="35" grid-angle="0" trail-opacity="0.044" particle-colors="#00ff88, #00ffcc, #00ffff"></bb-neon-rails>
+        <div id="content">
+            <!-- Liquid Glass Card -->
+            <div class="liquid-glass-card">
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="user-info">
+                            <div class="avatar">
+                                <svg class="avatar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="user-details">
+                                <p class="user-name">Stefan Nieke</p>
+                                <p class="user-role">Software Engineer</p>
+                            </div>
+                        </div>
+                        <svg class="notification-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">beautiful-backgrounds.js</h3>
+                        <p class="card-description">Use beautiful-backgrounds.js to create awesome effects.</p>
+                        <button class="glass-button" onclick="window.open('https://niekes.github.io/beautiful-backgrounds/?path=/story/backgrounds-neon-rails--neural-network', '_blank')">
+                            Get Started
+                        </button>
+                    </div>
+                    <p class="card-tip">Tip: Click on the button to adjust this background!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SVG Filter (include once in your document) -->
+<svg width="0" height="0" style="position: absolute;">
+    <defs>
+        <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.025 0.025" numOctaves="2" seed="92" result="noise" />
+            <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
+            <feDisplacementMap in="SourceGraphic" in2="blurred" scale="65" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </defs>
+</svg>

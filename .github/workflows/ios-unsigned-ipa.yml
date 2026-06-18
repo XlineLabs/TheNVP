@@ -1,0 +1,95 @@
+name: iOS Unsigned IPA
+
+# Builds an UNSIGNED .ipa for iPhone (no code signing). Install via tools that
+# accept unsigned apps (e.g. sideloading with your own signing), or use it to
+# verify the app compiles for device in CI.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios-unsigned-ipa.yml"
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # needed to attach the IPA to a Release on tag
+
+jobs:
+  build:
+    # macos-15 ships Xcode 16, which understands the project format XcodeGen
+    # emits (objectVersion 77) and builds MLX Swift.
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      SCHEME: NVPNode
+      PROJECT: ios/NVPNode.xcodeproj
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      # Cache compiled SwiftPM artifacts (MLX is the slow part). First run is
+      # ~6-7 min; later runs reuse this and are much faster.
+      - name: Cache SwiftPM + DerivedData
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/NVPNode-*/SourcePackages
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData/NVPNode-*/Build/Intermediates.noindex
+          key: ${{ runner.os }}-mlx-${{ hashFiles('ios/project.yml', '.github/workflows/ios-unsigned-ipa.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-mlx-
+
+      - name: Resolve Swift packages (MLX)
+        working-directory: ios
+        run: xcodebuild -project NVPNode.xcodeproj -resolvePackageDependencies
+
+      - name: Build unsigned archive
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/NVPNode.xcarchive" \
+            -skipPackagePluginValidation \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            ENABLE_USER_SCRIPT_SANDBOXING=NO
+
+      - name: Package .ipa (unsigned)
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/NVPNode.xcarchive/Products/Applications/NVPNode.app"
+          if [ ! -d "$APP" ]; then echo "App not found at $APP"; ls -R "$RUNNER_TEMP/NVPNode.xcarchive/Products" || true; exit 1; fi
+          rm -rf "$RUNNER_TEMP/Payload"
+          mkdir -p "$RUNNER_TEMP/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/Payload/"
+          (cd "$RUNNER_TEMP" && zip -qry NVPNode-unsigned.ipa Payload)
+          echo "Built $(du -h "$RUNNER_TEMP/NVPNode-unsigned.ipa" | cut -f1) IPA"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NVPNode-unsigned-ipa
+          path: ${{ runner.temp }}/NVPNode-unsigned.ipa
+          if-no-files-found: error
+
+      - name: Attach IPA to release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ runner.temp }}/NVPNode-unsigned.ipa

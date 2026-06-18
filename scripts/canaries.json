@@ -1,0 +1,21 @@
+{
+  "placeholder": true,
+  "generated_with": null,
+  "note": "PLACEHOLDER canaries. Expected outputs are hand-written dummies, NOT real model outputs. They keep the backend + simulator testable on any machine. Regenerate on a Mac (Apple Silicon) with scripts/gen_canaries.py to get real Gemma 4 greedy outputs, then re-run `pnpm db:seed`. The simulator honest-mode reads this SAME file as its reference table, so canary verification works end-to-end regardless of whether values are real or placeholder.",
+  "params": { "max_tokens": 64, "temperature": 0, "top_k": 1, "seed": 0 },
+  "canaries": [
+    { "model": "gemma_4_e2b_it_4bit", "prompt": "What is the capital of France? Answer with one word.", "expected": "Paris" },
+    { "model": "gemma_4_e2b_it_4bit", "prompt": "What is 2 + 2? Answer with a number only.", "expected": "4" },
+    { "model": "gemma_4_e2b_it_4bit", "prompt": "Complete with one word: the opposite of hot is", "expected": "cold" },
+    { "model": "gemma_4_e2b_it_4bit", "prompt": "How many days are in one week? Answer with a number only.", "expected": "7" },
+    { "model": "gemma_4_e2b_it_4bit", "prompt": "What color is the clear daytime sky? Answer with one word.", "expected": "blue" },
+    { "model": "gemma_4_e2b_it_4bit", "prompt": "What is the chemical symbol for water? Answer only the symbol.", "expected": "H2O" },
+
+    { "model": "qwen2_5_0_5b", "prompt": "What is the capital of France? Answer with one word.", "expected": "Paris" },
+    { "model": "qwen2_5_0_5b", "prompt": "What is 2 + 2? Answer with a number only.", "expected": "4" },
+    { "model": "qwen2_5_0_5b", "prompt": "Complete with one word: the opposite of hot is", "expected": "cold" },
+    { "model": "qwen2_5_0_5b", "prompt": "How many days are in one week? Answer with a number only.", "expected": "7" },
+    { "model": "qwen2_5_0_5b", "prompt": "What color is the clear daytime sky? Answer with one word.", "expected": "blue" },
+    { "model": "qwen2_5_0_5b", "prompt": "What is the chemical symbol for water? Answer only the symbol.", "expected": "H2O" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "nvp-node",
+  "version": "0.0.0",
+  "private": true,
+  "description": "NVP Node v0 — distributed AI inference network (coordinator + iOS worker + simulator)",
+  "scripts": {
+    "dev": "pnpm --filter @nvp/coordinator dev",
+    "sim": "pnpm --filter @nvp/simulator start"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

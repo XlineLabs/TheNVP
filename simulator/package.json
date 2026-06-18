@@ -1,0 +1,20 @@
+{
+  "name": "@nvp/simulator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fake worker (TS) — validates the coordinator backend without a phone. CI/test only; never serves real chatbot answers.",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "honest": "tsx src/index.ts --mode honest",
+    "cheat": "tsx src/index.ts --mode cheat",
+    "demo": "tsx src/index.ts --demo"
+  },
+  "dependencies": {
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

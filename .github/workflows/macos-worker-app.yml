@@ -1,0 +1,88 @@
+name: macOS Worker App
+
+# Builds the macOS worker app (NVPNodeMac)
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+    paths:
+      - "ios/**"
+      - ".github/workflows/macos-worker-app.yml"
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      SCHEME: NVPNodeMac
+      PROJECT: ios/NVPNode.xcodeproj
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Cache SwiftPM + DerivedData
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/NVPNodeMac-*/SourcePackages
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData/NVPNodeMac-*/Build/Intermediates.noindex
+          key: ${{ runner.os }}-mlx-macos-${{ hashFiles('ios/project.yml', '.github/workflows/macos-worker-app.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-mlx-macos-
+
+      - name: Resolve Swift packages (MLX)
+        working-directory: ios
+        run: xcodebuild -project NVPNode.xcodeproj -scheme NVPNodeMac -resolvePackageDependencies
+
+      - name: Build macOS app
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk macosx \
+            -destination 'platform=macOS,arch=arm64' \
+            -archivePath "$RUNNER_TEMP/NVPNodeMac.xcarchive" \
+            -skipPackagePluginValidation \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM="" \
+            ENABLE_USER_SCRIPT_SANDBOXING=NO
+
+      - name: Package .app
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/NVPNodeMac.xcarchive/Products/Applications/NVPNode.app"
+          if [ ! -d "$APP" ]; then echo "App not found at $APP"; ls -R "$RUNNER_TEMP/NVPNodeMac.xcarchive/Products" || true; exit 1; fi
+          echo "Built $(du -h "$APP" | cut -f1) app bundle"
+          # Copy to artifact location
+          cp -R "$APP" "$RUNNER_TEMP/NVPNodeMac.app"
+          zip -qry "$RUNNER_TEMP/NVPNodeMac.zip" "$RUNNER_TEMP/NVPNodeMac.app"
+          echo "Zipped to $(du -h "$RUNNER_TEMP/NVPNodeMac.zip" | cut -f1)"
+
+      - name: Upload app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NVPNodeMac-app
+          path: ${{ runner.temp }}/NVPNodeMac.zip
+          if-no-files-found: error
+
+      - name: Attach to release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ runner.temp }}/NVPNodeMac.zip

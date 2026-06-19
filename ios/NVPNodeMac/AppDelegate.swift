@@ -1,5 +1,7 @@
 import AppKit
-import Combine
+import MLXLLM
+import MLXLMCommon
+import Gemma4SwiftCore
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var api: APIClient
@@ -46,9 +48,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updateStatusItem("Loading model")
 
         if let mlxEngine = engine as? MLXInferenceEngine {
-            mlxEngine.setProgressHandler { progress in
+            mlxEngine.setProgressHandler { [weak self] progress in
                 print("[NVP Node] Model load progress: \(Int(progress * 100))%")
-                self.updateStatusItem("Loading \(Int(progress * 100))%")
+                self?.updateStatusItem("Loading \(Int(progress * 100))%")
             }
         }
 
@@ -72,9 +74,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         print("[NVP Node] Job accepted! Earned \(outcome.credited) credits")
                     }
                 },
-                onError: { msg in
+                onError: { [weak self] msg in
                     print("[NVP Node] Error: \(msg)")
-                    self.updateStatusItem("Error")
+                    self?.updateStatusItem("Error")
                 }
             )
         }

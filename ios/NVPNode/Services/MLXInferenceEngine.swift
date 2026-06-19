@@ -37,7 +37,6 @@ final class MLXInferenceEngine: InferenceEngine {
 
         container = nil
         currentModelId = nil
-        MLX.GPU.set(cacheLimit: 20 * 1024 * 1024)
 
         progressHandler?(0.05)
 
@@ -49,7 +48,7 @@ final class MLXInferenceEngine: InferenceEngine {
                 progressHandler?(0.1)
                 await Gemma4Registration.registerIfNeeded().value
                 progressHandler?(0.15)
-                configuration = ModelConfiguration(id: "mlx-community/gemma-4-e2b-it-4bit")
+                configuration = ModelConfiguration(id: Gemma4SwiftCore.verifiedModelId)
             } catch {
                 throw ModelLoadError.registrationFailed(error.localizedDescription)
             }
@@ -67,14 +66,7 @@ final class MLXInferenceEngine: InferenceEngine {
         progressHandler?(0.2)
 
         do {
-            let handler = progressHandler
-            container = try await LLMModelFactory.shared.loadContainer(
-                configuration: configuration,
-                progressHandler: { progress in
-                    let adjustedProgress = 0.2 + (progress.fractionCompleted * 0.75)
-                    handler?(adjustedProgress)
-                }
-            )
+            container = try await LLMModelFactory.shared.loadContainer(configuration: configuration)
             currentModelId = modelId
             progressHandler?(1.0)
         } catch {
@@ -86,7 +78,7 @@ final class MLXInferenceEngine: InferenceEngine {
         guard let container else { throw ModelLoadError.notLoaded }
 
         let start = Date()
-        let params = GenerateParameters(temperature: 0.8, topP: 0.95, maxTokens: maxTokens)
+        let params = GenerateParameters(maxTokens: maxTokens, temperature: 0.8, topP: 0.95)
 
         let text: String
         let modelId = Config.effectiveModelId

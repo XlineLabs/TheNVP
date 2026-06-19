@@ -66,6 +66,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/NVPNode.xcarchive" \
             -skipPackagePluginValidation \
+            -verbose \
             archive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \

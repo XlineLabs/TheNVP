@@ -91,7 +91,7 @@ final class MLXInferenceEngine: InferenceEngine {
             let stream = try await container.generate(input: input, parameters: params)
             var acc = ""
             for await event in stream {
-                if case .chunk(let s) = event { acc += s }
+                if case .chunk(let s) = event { acc.append(s) }
             }
             text = acc
         } else {

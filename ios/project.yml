@@ -60,6 +60,7 @@ targets:
       - path: NVPNode/Services/APIClient.swift
       - path: NVPNode/Services/KeychainStore.swift
       - path: NVPNode/Services/WorkerLoop.swift
+      - path: NVPNode/Services/LogStore.swift
       - path: NVPNode/Services/Config.swift
       - path: NVPNode/Format.swift
     dependencies:

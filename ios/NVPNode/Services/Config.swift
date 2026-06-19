@@ -17,8 +17,15 @@ enum Config {
     private static let autoModelKey = "auto_model_selection"
 
     static var workerModelId: String {
-        get { UserDefaults.standard.string(forKey: modelKey) ?? "gemma3_1b" }
-        set { UserDefaults.standard.set(newValue, forKey: modelKey) }
+        get { UserDefaults.standard.string(forKey: modelKey) ?? "auto" }
+        set {
+            UserDefaults.standard.set(newValue, forKey: modelKey)
+            if newValue == "auto" {
+                autoModelSelection = true
+            } else {
+                autoModelSelection = false
+            }
+        }
     }
 
     static var autoModelSelection: Bool {
@@ -26,9 +33,17 @@ enum Config {
         set { UserDefaults.standard.set(newValue, forKey: autoModelKey) }
     }
 
+    static var effectiveModelId: String {
+        if workerModelId == "auto" || autoModelSelection {
+            return recommendedModelForDevice()
+        }
+        return workerModelId
+    }
+
     static var modelCaps: [String] { [effectiveModelId] }
 
     static let supportedOnDevice: Set<String> = [
+        "auto",
         "gemma3_1b",
         "gemma3n_e2b",
         "qwen2_5_0_5b",
@@ -39,20 +54,15 @@ enum Config {
         "gemma3_1b": 900,
         "gemma3n_e2b": 2000,
         "qwen2_5_0_5b": 300,
-        "gemma_4_e2b_it_4bit": 1600
+        "gemma_4_e2b_it_4bit": 1600,
+        "auto": 0
     ]
 
     static func modelSizeGB(_ modelId: String) -> String {
         let mb = modelSizesMB[modelId] ?? 0
+        if mb == 0 { return "—" }
         let gb = Double(mb) / 1024.0
         return String(format: "%.1f GB", gb)
-    }
-
-    static var effectiveModelId: String {
-        if workerModelId == "auto" {
-            return recommendedModelForDevice()
-        }
-        return workerModelId
     }
 
     static func recommendedModelForDevice() -> String {
@@ -74,6 +84,4 @@ enum Config {
             return "qwen2_5_0_5b"
         }
     }
-
-    static let autoModelSelection: Bool = workerModelId == "auto"
 }

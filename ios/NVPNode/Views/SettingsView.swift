@@ -14,7 +14,6 @@ struct SettingsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    automaticModelSection
                     modelSelectionSection
                     downloadStatusSection
                     recoveryKeySection
@@ -36,101 +35,85 @@ struct SettingsView: View {
         }
     }
 
-    private var automaticModelSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Model Selection").font(.headline).foregroundColor(Theme.text)
-            Text("Automatic selection chooses the best model based on your device's memory.")
-                .font(.caption).foregroundColor(Theme.muted)
-
-            Toggle(isOn: Binding(
-                get: { Config.autoModelSelection },
-                set: { enabled in
-                    Config.autoModelSelection = enabled
-                    if enabled {
-                        let recommended = Config.recommendedModelForDevice()
-                        app.setWorkerModel(recommended)
-                    }
-                }
-            )) {
-                HStack {
-                    Image(systemName: "wand.and.stars")
-                        .foregroundColor(Theme.gold)
-                    Text("Automatic model selection")
-                        .foregroundColor(Theme.text)
-                }
-            }
-            .tint(Theme.green)
-
-            if Config.autoModelSelection {
-                let recommended = Config.recommendedModelForDevice()
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(Theme.green)
-                        .font(.caption)
-                    Text("Recommended: \(recommended) (\(Config.modelSizeGB(recommended)))")
-                        .font(.caption)
-                        .foregroundColor(Theme.muted)
-                }
-                .padding(.top, 4)
-            }
-        }
-        .card()
-    }
-
     private var modelSelectionSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("On-device model").font(.headline).foregroundColor(Theme.text)
-            Text("Choose what your iPhone runs. Size shows storage needed on device.")
+            Text("Choose what your iPhone runs. Price = what you earn per job.")
                 .font(.caption).foregroundColor(Theme.muted)
 
-            if Config.autoModelSelection {
-                HStack {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(Theme.gold)
-                    Text("Automatic mode enabled - select a model below to override")
-                        .font(.caption)
-                        .foregroundColor(Theme.muted)
+            Button { app.setWorkerModel("auto") } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: Config.workerModelId == "auto" ? "largecircle.fill.circle" : "circle")
+                        .foregroundColor(Config.workerModelId == "auto" ? Theme.green : Theme.muted)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Automatic (recommended)").foregroundColor(Theme.text).font(.callout)
+                        Text("Picks best model for your device → \(Config.effectiveModelId)")
+                            .font(.caption2).foregroundColor(Theme.muted)
+                    }
+                    Spacer()
+                    Image(systemName: "wand.and.stars").foregroundColor(Theme.gold)
                 }
-                .padding(.bottom, 4)
+                .padding(.vertical, 6)
             }
+            Divider().background(Theme.border)
 
             ForEach(app.models) { m in
                 let supported = Config.supportedOnDevice.contains(m.id)
-                let selected = m.id == Config.workerModelId
-                let sizeGB = Config.modelSizeGB(m.id)
+                let selected = m.id == Config.workerModelId || (m.id == "auto" && Config.workerModelId == "auto")
+                let modelSize = Config.modelSizeGB(m.id)
+                let isDownloading = app.isModelLoading && app.selectedModelId == m.id
+                let isSelectedModel = Config.effectiveModelId == m.id
 
                 Button {
-                    if supported && !Config.autoModelSelection { app.setWorkerModel(m.id) }
+                    if supported { app.setWorkerModel(m.id) }
                 } label: {
                     HStack(spacing: 10) {
                         Image(systemName: selected ? "largecircle.fill.circle" : "circle")
                             .foregroundColor(selected ? Theme.green : Theme.muted)
-
                         VStack(alignment: .leading, spacing: 2) {
                             HStack {
                                 Text(m.name).foregroundColor(Theme.text).font(.callout)
-                                Text(sizeGB)
-                                    .font(.caption2)
-                                    .foregroundColor(Theme.gold)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Theme.gold.opacity(0.15))
-                                    .clipShape(Capsule())
+                                if modelSize != "—" {
+                                    Text(modelSize)
+                                        .font(.caption2)
+                                        .foregroundColor(Theme.gold)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Theme.gold.opacity(0.15))
+                                        .clipShape(Capsule())
+                                }
                             }
-                            Text(supported ? "Runs on this iPhone" : "Not runnable on iOS yet")
-                                .font(.caption2).foregroundColor(supported ? Theme.muted : Theme.red)
+                            HStack(spacing: 4) {
+                                if supported {
+                                    if isSelectedModel && app.isModelLoaded {
+                                        Label("Loaded", systemImage: "checkmark.circle.fill")
+                                            .font(.caption2)
+                                            .foregroundColor(Theme.green)
+                                    } else if isDownloading {
+                                        Label("Downloading...", systemImage: "arrow.down.circle")
+                                            .font(.caption2)
+                                            .foregroundColor(Theme.gold)
+                                    } else {
+                                        Text("Runs on this iPhone")
+                                            .font(.caption2)
+                                            .foregroundColor(Theme.muted)
+                                    }
+                                } else {
+                                    Text("Not runnable on iOS yet")
+                                        .font(.caption2)
+                                        .foregroundColor(Theme.red)
+                                }
+                            }
                         }
-
                         Spacer()
-
                         Text("\(Format.usd(m.creditRate))/job")
                             .font(.caption).foregroundColor(Theme.gold)
                     }
                     .padding(.vertical, 6)
                     .opacity(supported ? 1 : 0.5)
                 }
-                .disabled(!supported || Config.autoModelSelection)
-                Divider().background(Color.white.opacity(0.06))
+                .disabled(!supported)
+                Divider().background(Theme.border)
             }
 
             if app.models.isEmpty {
@@ -145,19 +128,21 @@ struct SettingsView: View {
             Text("Download Status").font(.headline).foregroundColor(Theme.text)
 
             if app.isModelLoading {
-                HStack {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .foregroundColor(Theme.gold)
-                    Text("Downloading \(app.selectedModelId ?? "model")...")
-                        .font(.callout).foregroundColor(Theme.text)
-                    Spacer()
-                    Text("\(Int(app.modelLoadProgress * 100))%")
-                        .font(.caption).foregroundColor(Theme.gold)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .foregroundColor(Theme.gold)
+                        Text("Downloading \(app.selectedModelId ?? "model")...")
+                            .font(.callout).foregroundColor(Theme.text)
+                        Spacer()
+                        Text("\(Int(app.modelLoadProgress * 100))%")
+                            .font(.caption).foregroundColor(Theme.gold)
+                    }
+                    ProgressView(value: app.modelLoadProgress)
+                        .tint(Theme.gold)
+                    Text("Don't close the app during download")
+                        .font(.caption2).foregroundColor(Theme.muted)
                 }
-                ProgressView(value: app.modelLoadProgress)
-                    .tint(Theme.gold)
-                Text("Don't close the app during download")
-                    .font(.caption2).foregroundColor(Theme.muted)
             } else if app.isModelLoaded {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
@@ -201,7 +186,7 @@ struct SettingsView: View {
     private var recoveryKeySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Recovery key").font(.headline).foregroundColor(Theme.text)
-            Text("Download a file with your recovery key. Keep it safe — it reconnects your account (and earnings) on another device.")
+            Text("Download a file with your recovery key.")
                 .font(.caption).foregroundColor(Theme.muted)
 
             Button {
@@ -274,12 +259,9 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Device").font(.headline).foregroundColor(Theme.text)
             row("Worker ID", app.workerId ?? "—")
-            row("Model", Config.workerModelId)
-            row("Storage", Config.modelSizeGB(Config.workerModelId))
+            row("Model", Config.effectiveModelId)
+            row("Storage", Config.modelSizeGB(Config.effectiveModelId))
             row("Charging", app.deviceState.isCharging ? "Yes" : "No")
-            if Config.autoModelSelection {
-                row("Auto Mode", "Enabled")
-            }
         }
         .card()
     }

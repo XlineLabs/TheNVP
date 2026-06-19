@@ -21,11 +21,14 @@ jobs:
     env:
       SCHEME: NVPNodeMac
       PROJECT: ios/NVPNode.xcodeproj
+      HOMEBREW_NO_REQUIRE_TAP_TRUST: "1"
     steps:
       - uses: actions/checkout@v4
 
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: |
+          export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
+          brew install xcodegen
 
       - name: Generate Xcode project
         working-directory: ios
